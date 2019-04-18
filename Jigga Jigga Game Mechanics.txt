@@ -1,0 +1,98 @@
+﻿Please direct questions regarding this summary to Isaac Li,
+who will periodically update/clarify the game mechanics below.
+
+
+Summary
+Welcome to Jigga-Jigga: Nuggets! In this game, four players face off against each other to dominate the grid of squares.
+
+
+… If this is starting to sound like Conquest, we mean “dominate” in a different way. 
+
+
+Players will be scored not by total number of squares occupied, but by the structures that they create. Out of their colors with which they fill the board, players will seek to make connected clumps, which will gain them points. They also have to watch out for the grid that constantly undoes their hard work by removing various colored squares.
+
+
+Who will prevail in this contest? (Tip: running a Conquest bot is not the best idea.) The winner gets nuggets! (Just kidding.)
+
+
+Definitions
+* Square  A unit square of the grid.
+   * We denote a square by two coordinates. Thus (0,0) is the top left square, (19,0) is the top right square, and (19,19) is the bottom right square. Only use integers from 0 to 19 in both coordinates; otherwise the controller will default to (0,0).
+* Color  To claim a square. Used in reference of a player’s ownership of a square.
+* Decay  To revert back to an uncolored state. Used in context of a square.
+* Nugget  A connected component (or “clump”) of squares of a color. 
+   * Informally, the squares of a nugget are connected to each other along their sides (not diagonals!), and can make a polygon. 
+   * The formal definition is available through the link above. Two squares are adjacent if they are incident on an edge (not a vertex).
+   * The size of a nugget is the number of squares in it.
+
+
+Structure of the game
+The game will run for 260 moves. A move consists of a simultaneous set of four actions, one from each player, given by queries of coordinates, and afterwards possibly effects (of decay) after the actions. 
+
+
+During the first 60 moves (setup phase), no decay is active, and players query to color empty squares. Players are unable to recolor any already colored squares.
+
+
+During the next/last 200 moves (build phase), players still query to color squares, but have the ability to recolor opponents’ squares. After the simultaneous actions, the effect of decay happens on every square.
+
+
+After all of the moves are done, the scores of the players are final. (The details of scoring appear in a later section.)
+
+
+Your move
+Your move will be a pair of coordinates detailing which square you want to color. All bots will do this action simultaneously. The following list details what happens due to these actions in the build phase (in the setup phase, only the first option in the list is allowed).
+1. If the queried square is empty, it is automatically taken. (In the case of several players querying the same square, the square is given to just one of said players randomly.) 
+2. If the queried square is already colored, then each player contesting the square adds a 40 percent chance of that square being recolored. (So if two players contest the same square, there is an 80% chance that it will be recolored.) If it is recolored, it is given to the player contesting it. If multiple players contest, it will go to one of the players contesting the square randomly.
+3. Note that a player who has a square already of their own color may try to “recolor” their own square (with the same procedure of option 2). If they succeed, the square is reverted to an uncolored state. (This option is for strategic purposes.)
+
+
+Decay
+During the last 200 moves, decay will be active. After the moves of the players are done, each square is assigned a given probability to decay. When a square decays, it reverts back to an uncolored state.
+
+
+The base probability of decay of a square S is determined by the number of squares adjacent to S and with the same color as S; let this number of squares be N. Then based on the number of moves left in the game, the base probability is shown in the following chart:
+
+
+Moves left | N
+	0
+	1
+	2
+	3
+	4
+	200-121
+	5
+	4
+	2
+	1
+	0
+	120-6
+	8
+	6
+	4
+	3
+	1
+	5-1
+	10
+	8
+	12
+	8
+	3
+	
+
+Note that decay affects the perimeters of nuggets the most throughout the game; for example, a 10 by 10 block of one color will likely last much longer than twenty-five separate 2 by 2 blocks of one color. The last five moves of the game are easily the most volatile, but the full interpretation is left up to the reader.
+
+
+The base probability is divided by a decay multiplier. (I know; this is confusing terminology.) The decay multiplier is based on the number of colored squares on the board, and is equal to 1100 / (P + 100), where P is the number of colored squares on the board. The decay multiplier ranges from 2.2 to 11; our first estimate of this number is around 4 for an average game, but it may vary over many playstyles.
+
+
+The best way to get a feel for the rate of decay is to try it out yourself. As much as this information can help, it will be difficult to actually think about it without testing.
+
+
+End game and scoring
+Players are scored based on their nuggets. A player’s score is the product of the sizes of their nuggets. (If a player has literally nothing on the board, they get 1 point. This is actually as good as filling in half of the board with a checkerboard pattern.) At the end of the game, the players’ scores are the final scores, or the scores that actually count.
+
+
+The scores are displayed on the screen throughout the game, and the game controller contains code that bots may use to calculate scores on their own (but do make sure to run the function at most once during your function for efficiency purposes).
+
+
+In the whole competition, every bot will compete in the same number of rounds. We expect that the cumulative score of a bot will be the product of its scores across all rounds. (To make the numbers more manageable, we will also likely simply take logarithms when recording scores.)
